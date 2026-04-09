@@ -116,6 +116,17 @@ class NotificationService {
     }
   }
 
+  static Future<void> cancelAllNotifications() async {
+    await _plugin.cancelAll();
+  }
+
+  static Future<void> rescheduleAllNotifications(List<Task> tasks) async {
+    await _plugin.cancelAll();
+    for (final task in tasks) {
+      await scheduleNotificationsForTask(task);
+    }
+  }
+
   static int _notificationId(String taskId, int stateIndex) {
     return (taskId.hashCode.abs() % 1000000) * 10 + stateIndex;
   }

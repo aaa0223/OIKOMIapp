@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'services/database_service.dart';
 import 'services/notification_service.dart';
 import 'screens/task_list_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +15,10 @@ Future<void> main() async {
   await NotificationService.requestPermission();
   await _onAppLaunch();
 
-  runApp(const TGLApp());
+  final prefs = await SharedPreferences.getInstance();
+  final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+
+  runApp(TGLApp(showOnboarding: !onboardingCompleted));
 }
 
 Future<void> _onAppLaunch() async {
@@ -24,19 +29,20 @@ Future<void> _onAppLaunch() async {
 }
 
 class TGLApp extends StatelessWidget {
-  const TGLApp({super.key});
+  const TGLApp({super.key, required this.showOnboarding});
+  final bool showOnboarding;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '課題',
+      title: 'OIKOMI',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
         fontFamily: '.SF Pro Text',
       ),
-      home: const TaskListScreen(),
+      home: showOnboarding ? const OnboardingScreen() : const TaskListScreen(),
     );
   }
 }
