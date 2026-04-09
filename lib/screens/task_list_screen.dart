@@ -5,6 +5,7 @@ import '../services/database_service.dart';
 import '../services/notification_service.dart';
 import '../services/tgl_calculator.dart';
 import 'task_form_screen.dart';
+import 'settings_screen.dart';
 
 class TaskListScreen extends StatelessWidget {
   const TaskListScreen({super.key});
@@ -18,6 +19,13 @@ class TaskListScreen extends StatelessWidget {
         elevation: 0,
         title: const Text('課題', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SettingsScreen()),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.add, size: 28),
             onPressed: () => Navigator.push(

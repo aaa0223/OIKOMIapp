@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 import '../models/task.dart';
 import '../services/database_service.dart';
@@ -208,12 +209,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     Expanded(
                       child: Column(
                         children: [
-                          Text(
-                            _formatTime(_timeIndex),
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          const Text(
+                            '所要時間',
+                            style: TextStyle(fontSize: 13, color: Colors.grey),
+                            textAlign: TextAlign.center,
                           ),
-                          const Text('所要時間', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           _DrumDial(
                             itemCount: _timeSteps,
                             selectedIndex: _timeIndex,
@@ -223,16 +224,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         ],
                       ),
                     ),
-                    Container(width: 1, height: 160, color: Colors.grey.shade200),
+                    Container(width: 1, height: 170, color: Colors.grey.shade200),
                     Expanded(
                       child: Column(
                         children: [
-                          Text(
-                            '$_avoidance',
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          const Text(
+                            'やりたくなさ',
+                            style: TextStyle(fontSize: 13, color: Colors.grey),
+                            textAlign: TextAlign.center,
                           ),
-                          const Text('やりたくなさ', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           _DrumDial(
                             itemCount: 10,
                             selectedIndex: _avoidance - 1,
@@ -314,6 +315,10 @@ class _DrumDial extends StatefulWidget {
 class _DrumDialState extends State<_DrumDial> {
   late FixedExtentScrollController _controller;
 
+  static const double _height = 150;
+  static const double _itemExtent = 38;
+  static const double _fadeSize = 45;
+
   @override
   void initState() {
     super.initState();
@@ -335,33 +340,81 @@ class _DrumDialState extends State<_DrumDial> {
     super.dispose();
   }
 
+  TextStyle _textStyle(int index) {
+    final diff = (index - widget.selectedIndex).abs();
+    if (diff == 0) {
+      return const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+        color: Colors.blue,
+      );
+    } else if (diff == 1) {
+      return TextStyle(fontSize: 16, color: Colors.grey.shade500);
+    } else {
+      return TextStyle(fontSize: 15, color: Colors.grey.shade400);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 120,
-      child: ListWheelScrollView.useDelegate(
-        controller: _controller,
-        itemExtent: 36,
-        perspective: 0.003,
-        diameterRatio: 1.5,
-        physics: const FixedExtentScrollPhysics(),
-        onSelectedItemChanged: widget.onChanged,
-        childDelegate: ListWheelChildBuilderDelegate(
-          childCount: widget.itemCount,
-          builder: (context, index) {
-            final selected = index == widget.selectedIndex;
-            return Center(
-              child: Text(
-                widget.labelBuilder(index),
-                style: TextStyle(
-                  fontSize: selected ? 18 : 14,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                  color: selected ? Colors.black : Colors.grey,
+      height: _height,
+      child: Stack(
+        children: [
+          // フェードアウト付きドラム
+          ShaderMask(
+            shaderCallback: (rect) => const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.white,
+                Colors.white,
+                Colors.transparent,
+              ],
+              stops: [0.0, _fadeSize / _height, 1.0 - _fadeSize / _height, 1.0],
+            ).createShader(rect),
+            blendMode: BlendMode.dstIn,
+            child: SizedBox(
+              height: _height,
+              child: ListWheelScrollView.useDelegate(
+                controller: _controller,
+                itemExtent: _itemExtent,
+                perspective: 0.003,
+                diameterRatio: 1.5,
+                physics: const FixedExtentScrollPhysics(),
+                onSelectedItemChanged: (i) {
+                  HapticFeedback.selectionClick();
+                  widget.onChanged(i);
+                },
+                childDelegate: ListWheelChildBuilderDelegate(
+                  childCount: widget.itemCount,
+                  builder: (context, index) => Center(
+                    child: Text(
+                      widget.labelBuilder(index),
+                      style: _textStyle(index),
+                    ),
+                  ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          ),
+          // 中央選択行ハイライト帯
+          Positioned(
+            top: (_height - _itemExtent) / 2,
+            left: 4,
+            right: 4,
+            child: IgnorePointer(
+              child: Container(
+                height: _itemExtent,
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
