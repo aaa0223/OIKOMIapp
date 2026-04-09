@@ -98,6 +98,12 @@ class NotificationService {
       _notificationMessage(state),
       tz.TZDateTime.from(triggerTime, tz.local),
       const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'oikomi_notifications',
+          'タスク通知',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
         iOS: DarwinNotificationDetails(
           presentAlert: true,
           presentSound: true,
