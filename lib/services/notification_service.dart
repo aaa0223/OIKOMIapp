@@ -26,6 +26,10 @@ class NotificationService {
     final ios = _plugin.resolvePlatformSpecificImplementation<
         IOSFlutterLocalNotificationsPlugin>();
     await ios?.requestPermissions(alert: true, badge: true, sound: true);
+
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await android?.requestNotificationsPermission();
   }
 
   static Future<void> scheduleNotificationsForTask(Task task) async {
@@ -92,27 +96,41 @@ class NotificationService {
     required TGLState state,
     required DateTime triggerTime,
   }) async {
-    await _plugin.zonedSchedule(
-      id,
-      task.title,
-      _notificationMessage(state),
-      tz.TZDateTime.from(triggerTime, tz.local),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'oikomi_notifications',
-          'タスク通知',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentSound: true,
-        ),
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'oikomi_notifications',
+        'タスク通知',
+        importance: Importance.high,
+        priority: Priority.high,
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentSound: true,
+      ),
     );
+    try {
+      await _plugin.zonedSchedule(
+        id,
+        task.title,
+        _notificationMessage(state),
+        tz.TZDateTime.from(triggerTime, tz.local),
+        details,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (_) {
+      await _plugin.zonedSchedule(
+        id,
+        task.title,
+        _notificationMessage(state),
+        tz.TZDateTime.from(triggerTime, tz.local),
+        details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    }
   }
 
   static String _notificationMessage(TGLState state) {

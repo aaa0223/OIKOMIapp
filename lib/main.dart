@@ -40,7 +40,6 @@ class TGLApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
-        fontFamily: '.SF Pro Text',
       ),
       home: showOnboarding ? const OnboardingScreen() : const TaskListScreen(),
     );

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../models/task.dart';
@@ -39,37 +38,23 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   }
 
   Future<void> _pickDeadline() async {
-    DateTime picked = _deadline;
-    await showCupertinoModalPopup<void>(
+    final date = await showDatePicker(
       context: context,
-      builder: (_) => Container(
-        height: 300,
-        color: CupertinoColors.systemBackground.resolveFrom(context),
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: CupertinoButton(
-                child: const Text('完了'),
-                onPressed: () {
-                  setState(() => _deadline = picked);
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.dateAndTime,
-                initialDateTime: _deadline,
-                minimumDate: DateTime.now(),
-                use24hFormat: true,
-                onDateTimeChanged: (dt) => picked = dt,
-              ),
-            ),
-          ],
-        ),
-      ),
+      initialDate: _deadline,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
     );
+    if (date == null || !mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_deadline),
+    );
+    if (time == null || !mounted) return;
+
+    setState(() {
+      _deadline = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    });
   }
 
   Future<void> _submit() async {
