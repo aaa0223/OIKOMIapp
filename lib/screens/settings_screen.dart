@@ -4,10 +4,9 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
 
-// URLはリリース時に差し替え
-const _privacyUrl = 'https://example.com/privacy.html';
-const _termsUrl = 'https://example.com/terms.html';
-const _supportUrl = 'https://example.com/support.html';
+const _privacyUrl = 'https://kobu-kgw.github.io/OIKOMIapp/privacy.html';
+const _termsUrl = 'https://kobu-kgw.github.io/OIKOMIapp/terms.html';
+const _supportUrl = 'https://kobu-kgw.github.io/OIKOMIapp/support.html';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
