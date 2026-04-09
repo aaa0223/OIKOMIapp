@@ -52,6 +52,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 if (!context.mounted) return;
                 Navigator.pushReplacement(
                   context,
+                  MaterialPageRoute(builder: (_) => const TaskListScreen()),
+                );
+                Navigator.push(
+                  context,
                   MaterialPageRoute(builder: (_) => const TaskFormScreen()),
                 );
               }),
