@@ -15,7 +15,10 @@ class NotificationService {
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-    const initSettings = InitializationSettings(iOS: darwinSettings);
+    const initSettings = InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      iOS: darwinSettings,
+    );
     await _plugin.initialize(initSettings);
   }
 
