@@ -55,22 +55,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showComingSoonDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('近日公開'),
-        content: const Text('Premium機能は今後のアップデートで追加予定です。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,28 +86,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   'システム設定に従う',
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
                 ),
-              ),
-            ],
-          ),
-
-          // ─── Premium ─────────────────────────────────────────────
-          _SectionHeader('Premium'),
-          _SettingsCard(
-            children: [
-              ListTile(
-                title: const Text('Premiumにアップグレード'),
-                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap: _showComingSoonDialog,
-              ),
-              const Divider(height: 1, indent: 16),
-              ListTile(
-                leading: const Icon(Icons.lock_outline, color: Colors.grey),
-                title: Text(
-                  'カスタム TGL閾値',
-                  style: TextStyle(color: Colors.grey.shade400),
-                ),
-                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap: _showComingSoonDialog,
               ),
             ],
           ),
