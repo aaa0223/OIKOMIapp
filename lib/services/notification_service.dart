@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../models/task.dart';
@@ -119,17 +120,22 @@ class NotificationService {
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
-    } catch (_) {
-      await _plugin.zonedSchedule(
-        id,
-        task.title,
-        _notificationMessage(state),
-        tz.TZDateTime.from(triggerTime, tz.local),
-        details,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
-      );
+    } catch (e) {
+      debugPrint('Exact schedule failed (id=$id): $e, falling back to inexact');
+      try {
+        await _plugin.zonedSchedule(
+          id,
+          task.title,
+          _notificationMessage(state),
+          tz.TZDateTime.from(triggerTime, tz.local),
+          details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+        );
+      } catch (e2) {
+        debugPrint('Inexact schedule also failed (id=$id): $e2');
+      }
     }
   }
 
