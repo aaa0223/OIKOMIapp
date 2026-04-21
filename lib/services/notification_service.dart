@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -24,13 +26,27 @@ class NotificationService {
   }
 
   static Future<void> requestPermission() async {
-    final ios = _plugin.resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>();
-    await ios?.requestPermissions(alert: true, badge: true, sound: true);
+    if (Platform.isIOS) {
+      final ios = _plugin.resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
+      await ios?.requestPermissions(alert: true, badge: true, sound: true);
+      return;
+    }
+    if (Platform.isAndroid) {
+      final android = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      if (android == null) return;
+      await android.requestNotificationsPermission();
+      final canExact = await android.canScheduleExactNotifications();
+      debugPrint('canScheduleExactNotifications: $canExact');
+    }
+  }
 
+  static Future<bool> _canScheduleExactNotifications() async {
+    if (!Platform.isAndroid) return true;
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await android?.requestNotificationsPermission();
+    return await android?.canScheduleExactNotifications() ?? false;
   }
 
   static Future<void> scheduleNotificationsForTask(Task task) async {
@@ -47,6 +63,8 @@ class NotificationService {
       TGLState.war,
     ];
 
+    final canExact = await _canScheduleExactNotifications();
+
     for (final (index, targetState) in transitions.indexed) {
       if (remaining <= 0) break;
       final triggerTime = _calculateTransitionTime(task, targetState);
@@ -57,6 +75,7 @@ class NotificationService {
         task: task,
         state: targetState,
         triggerTime: triggerTime,
+        useExactAlarm: canExact,
       );
       remaining--;
     }
@@ -96,6 +115,7 @@ class NotificationService {
     required Task task,
     required TGLState state,
     required DateTime triggerTime,
+    bool useExactAlarm = true,
   }) async {
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -109,6 +129,9 @@ class NotificationService {
         presentSound: true,
       ),
     );
+    final mode = useExactAlarm
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle;
     try {
       await _plugin.zonedSchedule(
         id,
@@ -116,25 +139,27 @@ class NotificationService {
         _notificationMessage(state),
         tz.TZDateTime.from(triggerTime, tz.local),
         details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: mode,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
       );
     } catch (e) {
-      debugPrint('Exact schedule failed (id=$id): $e, falling back to inexact');
-      try {
-        await _plugin.zonedSchedule(
-          id,
-          task.title,
-          _notificationMessage(state),
-          tz.TZDateTime.from(triggerTime, tz.local),
-          details,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
-        );
-      } catch (e2) {
-        debugPrint('Inexact schedule also failed (id=$id): $e2');
+      debugPrint('Schedule failed (id=$id, exact=$useExactAlarm): $e');
+      if (useExactAlarm) {
+        try {
+          await _plugin.zonedSchedule(
+            id,
+            task.title,
+            _notificationMessage(state),
+            tz.TZDateTime.from(triggerTime, tz.local),
+            details,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+          );
+        } catch (e2) {
+          debugPrint('Inexact also failed (id=$id): $e2');
+        }
       }
     }
   }

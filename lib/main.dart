@@ -12,13 +12,13 @@ Future<void> main() async {
   tz.initializeTimeZones();
   await DatabaseService.init();
   await NotificationService.init();
-  await NotificationService.requestPermission();
-  await _onAppLaunch();
 
   final prefs = await SharedPreferences.getInstance();
   final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
   runApp(TGLApp(showOnboarding: !onboardingCompleted));
+  await NotificationService.requestPermission();
+  await _onAppLaunch();
 }
 
 Future<void> _onAppLaunch() async {

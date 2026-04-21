@@ -24,7 +24,7 @@ android {
         applicationId = "com.kobu.oikomi"
         minSdk = flutter.minSdkVersion
         targetSdk = 36
-        versionCode = 2
+        versionCode = 5
         versionName = "1.1.1"
     }
 
