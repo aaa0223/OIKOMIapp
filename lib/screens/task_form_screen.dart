@@ -65,7 +65,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   Future<void> _pickDeadline() async {
     final l = AppLocalizations.of(context)!;
-    DateTime picked = _deadline;
+    // minimumDate と initialDateTime のミリ秒差によるアサーション違反を防ぐため
+    // minimumDate を1分前に設定し、初期値は現在時刻以降にクランプする
+    final minDate = DateTime.now().subtract(const Duration(minutes: 1));
+    final initial = _deadline.isBefore(minDate) ? minDate : _deadline;
+    DateTime picked = initial;
     await showCupertinoModalPopup<void>(
       context: context,
       builder: (_) => Container(
@@ -86,8 +90,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             Expanded(
               child: CupertinoDatePicker(
                 mode: CupertinoDatePickerMode.dateAndTime,
-                initialDateTime: _deadline,
-                minimumDate: DateTime.now(),
+                initialDateTime: initial,
+                minimumDate: minDate,
                 use24hFormat: true,
                 onDateTimeChanged: (dt) => picked = dt,
               ),
