@@ -86,13 +86,29 @@ class _TaskCardState extends State<_TaskCard> {
       });
 
   Future<void> _complete() async {
-    await DatabaseService.markCompleted(widget.task.id);
-    await NotificationService.cancelNotificationsForTask(widget.task.id);
+    try {
+      await DatabaseService.markCompleted(widget.task.id);
+      await NotificationService.cancelNotificationsForTask(widget.task.id);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('完了処理に失敗しました: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _delete() async {
-    await NotificationService.cancelNotificationsForTask(widget.task.id);
-    await DatabaseService.deleteTask(widget.task.id);
+    try {
+      await NotificationService.cancelNotificationsForTask(widget.task.id);
+      await DatabaseService.deleteTask(widget.task.id);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('削除に失敗しました: $e')),
+        );
+      }
+    }
   }
 
   void _edit(BuildContext context) {

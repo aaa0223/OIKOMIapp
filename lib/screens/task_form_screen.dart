@@ -97,10 +97,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       ..isCompleted = widget.task?.isCompleted ?? false
       ..createdAt = widget.task?.createdAt ?? DateTime.now();
 
-    await DatabaseService.saveTask(task);
-    await NotificationService.scheduleNotificationsForTask(task);
-
-    if (mounted) Navigator.pop(context);
+    try {
+      await DatabaseService.saveTask(task);
+      await NotificationService.scheduleNotificationsForTask(task);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存に失敗しました: $e')),
+        );
+      }
+    }
   }
 
   @override
