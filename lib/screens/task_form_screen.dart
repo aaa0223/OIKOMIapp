@@ -2,9 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/l10n_extensions.dart';
 import '../models/task.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
+import '../widgets/adaptive/adaptive_app_bar.dart';
+import '../widgets/adaptive/adaptive_button.dart';
 
 class TaskFormScreen extends StatefulWidget {
   const TaskFormScreen({super.key, this.task});
@@ -34,7 +38,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     final t = widget.task;
     _titleController = TextEditingController(text: t?.title ?? '');
     _selectedType = t?.type ?? TaskType.report;
-    _deadline = t?.deadline ?? DateTime.now().add(const Duration(days: 7));
+    _deadline = t?.deadline ?? DateTime.now();
     _timeIndex = t != null
         ? ((t.requiredHours * 60) / _timeStepMinutes).round() - 1
         : 3; // デフォルト60分
@@ -50,15 +54,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   double get _requiredHours => (_timeIndex + 1) * _timeStepMinutes / 60.0;
 
   String _formatTime(int index) {
+    final l = AppLocalizations.of(context)!;
     final minutes = (index + 1) * _timeStepMinutes;
     final h = minutes ~/ 60;
     final m = minutes % 60;
-    if (h == 0) return '$m分';
-    if (m == 0) return '$h時間';
-    return '$h時間$m分';
+    if (h == 0) return l.timeUnitMinutes(m);
+    if (m == 0) return l.timeUnitHours(h);
+    return l.timeUnitHoursMinutes(h, m);
   }
 
   Future<void> _pickDeadline() async {
+    final l = AppLocalizations.of(context)!;
     DateTime picked = _deadline;
     await showCupertinoModalPopup<void>(
       context: context,
@@ -70,7 +76,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: CupertinoButton(
-                child: const Text('完了'),
+                child: Text(l.doneButton),
                 onPressed: () {
                   setState(() => _deadline = picked);
                   Navigator.pop(context);
@@ -93,10 +99,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   Future<void> _submit() async {
+    final l = AppLocalizations.of(context)!;
     final title = _titleController.text.trim();
     if (title.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('課題名を入力してください')),
+        SnackBar(content: Text(l.taskNameRequired)),
       );
       return;
     }
@@ -120,24 +127,20 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final deadlineText =
         '${_deadline.year}/${_deadline.month.toString().padLeft(2, '0')}/${_deadline.day.toString().padLeft(2, '0')} '
         '${_deadline.hour.toString().padLeft(2, '0')}:${_deadline.minute.toString().padLeft(2, '0')}';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F7),
-        elevation: 0,
-        leading: TextButton(
+      appBar: adaptiveAppBar(
+        title: _isEditing ? l.editTaskTitle : l.addTaskTitle,
+        leading: adaptiveTextButton(
+          text: l.cancelButton,
           onPressed: () => Navigator.pop(context),
-          child: const Text('キャンセル', style: TextStyle(color: Colors.blue)),
         ),
         leadingWidth: 100,
-        title: Text(
-          _isEditing ? '課題を編集' : '課題を追加',
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -148,17 +151,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               _Card(
                 child: TextField(
                   controller: _titleController,
-                  decoration: const InputDecoration(
-                    hintText: '例：統計学レポート、英語小テスト',
+                  decoration: InputDecoration(
+                    hintText: l.taskNamePlaceholder,
                     border: InputBorder.none,
-                    labelText: '課題名',
+                    labelText: l.taskNameLabel,
                   ),
                   textInputAction: TextInputAction.done,
                 ),
               ),
               const SizedBox(height: 12),
 
-              _SectionLabel('課題タイプ'),
+              _SectionLabel(l.taskTypeLabel),
               const SizedBox(height: 6),
               Wrap(
                 spacing: 8,
@@ -166,7 +169,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 children: TaskType.values.map((type) {
                   final selected = _selectedType == type;
                   return ChoiceChip(
-                    label: Text(type.label),
+                    label: Text(type.label(context)),
                     selected: selected,
                     onSelected: (_) => setState(() => _selectedType = type),
                     selectedColor: Colors.blue,
@@ -179,7 +182,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              _SectionLabel('締切'),
+              _SectionLabel(l.deadlineLabel),
               const SizedBox(height: 6),
               _Card(
                 child: InkWell(
@@ -201,7 +204,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               ),
               const SizedBox(height: 16),
 
-              _SectionLabel('所要時間 / やりたくなさ'),
+              _SectionLabel(l.timeAndAvoidanceLabel),
               const SizedBox(height: 6),
               _Card(
                 child: Row(
@@ -209,9 +212,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     Expanded(
                       child: Column(
                         children: [
-                          const Text(
-                            '所要時間',
-                            style: TextStyle(fontSize: 13, color: Colors.grey),
+                          Text(
+                            l.requiredTimeLabel,
+                            style: const TextStyle(fontSize: 13, color: Colors.grey),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 4),
@@ -228,9 +231,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     Expanded(
                       child: Column(
                         children: [
-                          const Text(
-                            'やりたくなさ',
-                            style: TextStyle(fontSize: 13, color: Colors.grey),
+                          Text(
+                            l.avoidanceLevelLabel,
+                            style: const TextStyle(fontSize: 13, color: Colors.grey),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 4),
@@ -238,6 +241,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                             itemCount: 10,
                             selectedIndex: _avoidance - 1,
                             labelBuilder: (i) => '${i + 1}',
+                            sublabelBuilder: (i) => _avoidanceLabel(context, i + 1),
                             onChanged: (i) => setState(() => _avoidance = i + 1),
                           ),
                         ],
@@ -259,7 +263,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
                   ),
-                  child: Text(_isEditing ? '保存する' : '追加する'),
+                  child: Text(_isEditing ? l.saveTaskButton : l.addTaskButton),
                 ),
               ),
             ],
@@ -267,6 +271,23 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         ),
       ),
     );
+  }
+}
+
+String _avoidanceLabel(BuildContext context, int level) {
+  final l = AppLocalizations.of(context)!;
+  switch (level) {
+    case 1:  return l.avoidance1;
+    case 2:  return l.avoidance2;
+    case 3:  return l.avoidance3;
+    case 4:  return l.avoidance4;
+    case 5:  return l.avoidance5;
+    case 6:  return l.avoidance6;
+    case 7:  return l.avoidance7;
+    case 8:  return l.avoidance8;
+    case 9:  return l.avoidance9;
+    case 10: return l.avoidance10;
+    default: return '';
   }
 }
 
@@ -301,11 +322,13 @@ class _DrumDial extends StatefulWidget {
     required this.selectedIndex,
     required this.labelBuilder,
     required this.onChanged,
+    this.sublabelBuilder,
   });
 
   final int itemCount;
   final int selectedIndex;
   final String Function(int index) labelBuilder;
+  final String? Function(int index)? sublabelBuilder;
   final ValueChanged<int> onChanged;
 
   @override
@@ -389,12 +412,33 @@ class _DrumDialState extends State<_DrumDial> {
                 },
                 childDelegate: ListWheelChildBuilderDelegate(
                   childCount: widget.itemCount,
-                  builder: (context, index) => Center(
-                    child: Text(
-                      widget.labelBuilder(index),
-                      style: _textStyle(index),
-                    ),
-                  ),
+                  builder: (context, index) {
+                    final sublabel = widget.sublabelBuilder?.call(index);
+                    return Center(
+                      child: sublabel != null
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(widget.labelBuilder(index), style: _textStyle(index)),
+                                const SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    sublabel,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: index == widget.selectedIndex
+                                          ? Colors.blue.shade700
+                                          : Colors.grey.shade400,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Text(widget.labelBuilder(index), style: _textStyle(index)),
+                    );
+                  },
                 ),
               ),
             ),

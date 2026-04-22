@@ -10,17 +10,6 @@ enum TaskType {
   finalExam,
 }
 
-extension TaskTypeLabel on TaskType {
-  String get label {
-    switch (this) {
-      case TaskType.miniReport:   return 'ミニレポート';
-      case TaskType.report:       return 'レポート';
-      case TaskType.quizStudy:    return '小テスト勉強';
-      case TaskType.presentation: return '発表準備';
-      case TaskType.finalExam:    return '期末テスト';
-    }
-  }
-}
 
 @collection
 class Task {

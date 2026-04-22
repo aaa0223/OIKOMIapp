@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/l10n_extensions.dart';
 import '../models/task.dart';
 import '../models/tgl_state.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
 import '../services/tgl_calculator.dart';
+import '../widgets/adaptive/adaptive_app_bar.dart';
 import 'task_form_screen.dart';
 import 'settings_screen.dart';
 
@@ -12,12 +15,11 @@ class TaskListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F7),
-        elevation: 0,
-        title: const Text('課題', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      appBar: adaptiveAppBar(
+        title: l.taskListTitle,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -46,10 +48,10 @@ class TaskListScreen extends StatelessWidget {
           tasks.sort((a, b) => calculateTGL(b).compareTo(calculateTGL(a)));
 
           if (tasks.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
-                '課題なし。平和。',
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+                l.taskListEmpty,
+                style: const TextStyle(fontSize: 18, color: Colors.grey),
               ),
             );
           }
@@ -103,8 +105,19 @@ class _TaskCardState extends State<_TaskCard> {
     );
   }
 
+  String _formatHours(double hours) {
+    final l = AppLocalizations.of(context)!;
+    final totalMinutes = (hours * 60).round();
+    final h = totalMinutes ~/ 60;
+    final m = totalMinutes % 60;
+    if (h == 0) return l.timeUnitMinutes(m);
+    if (m == 0) return l.timeUnitHours(h);
+    return l.timeUnitHoursMinutes(h, m);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     final task = widget.task;
     final tgl = calculateTGL(task);
     final state = tglToState(tgl);
@@ -126,17 +139,17 @@ class _TaskCardState extends State<_TaskCard> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   _ActionButton(
-                    label: '編集',
+                    label: l.swipeEdit,
                     color: Colors.blue,
                     onTap: () => _edit(context),
                   ),
                   _ActionButton(
-                    label: '完了',
+                    label: l.swipeComplete,
                     color: Colors.green,
                     onTap: _complete,
                   ),
                   _ActionButton(
-                    label: '削除',
+                    label: l.swipeDelete,
                     color: Colors.red,
                     onTap: _delete,
                   ),
@@ -193,7 +206,7 @@ class _TaskCardState extends State<_TaskCard> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '${task.type.label}　M=${task.avoidance}　${_formatHours(task.requiredHours)}',
+                            '${task.type.label(context)}　M=${task.avoidance}　${_formatHours(task.requiredHours)}',
                             style: const TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ],
@@ -219,15 +232,6 @@ class _TaskCardState extends State<_TaskCard> {
         ),
       ),
     );
-  }
-
-  String _formatHours(double hours) {
-    final totalMinutes = (hours * 60).round();
-    final h = totalMinutes ~/ 60;
-    final m = totalMinutes % 60;
-    if (h == 0) return '$m分';
-    if (m == 0) return '$h時間';
-    return '$h時間$m分';
   }
 }
 
@@ -274,7 +278,7 @@ class _StatePill extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        state.label,
+        state.label(context),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,

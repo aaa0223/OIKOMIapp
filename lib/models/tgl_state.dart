@@ -13,17 +13,6 @@ class TGLThresholds {
   static const double noEscape = 20.0;
 }
 
-extension TGLStateLabel on TGLState {
-  String get label {
-    switch (this) {
-      case TGLState.peaceful: return 'まだ平和';
-      case TGLState.someday:  return 'そのうちやろ';
-      case TGLState.reality:  return 'そろそろ現実';
-      case TGLState.noEscape: return '逃げ場なし';
-      case TGLState.war:      return '戦争';
-    }
-  }
-}
 
 TGLState tglToState(double tgl) {
   if (tgl < TGLThresholds.peaceful) return TGLState.peaceful;

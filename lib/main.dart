@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'l10n/app_localizations.dart';
 import 'services/database_service.dart';
 import 'services/notification_service.dart';
 import 'screens/task_list_screen.dart';
@@ -37,6 +38,8 @@ class TGLApp extends StatelessWidget {
     return MaterialApp(
       title: 'OIKOMI',
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,

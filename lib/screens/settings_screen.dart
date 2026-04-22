@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../l10n/app_localizations.dart';
 import '../services/database_service.dart';
 import '../services/notification_service.dart';
+import '../widgets/adaptive/adaptive_app_bar.dart';
+import '../widgets/adaptive/adaptive_dialog.dart';
 
 // URLはリリース時に差し替え
 const _privacyUrl = 'https://example.com/privacy.html';
@@ -46,61 +49,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _launchUrl(String url) async {
+    final l = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('URLを開けませんでした')),
-        );
+        messenger.showSnackBar(SnackBar(content: Text(l.settingsUrlError)));
       }
     }
   }
 
-  void _showComingSoonDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('近日公開'),
-        content: const Text('Premium機能は今後のアップデートで追加予定です。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+  void _showComingSoonDialog(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
+    showAdaptiveConfirmDialog(
+      context,
+      title: l.settingsPremiumComingSoonTitle,
+      content: l.settingsPremiumComingSoonBody,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F7),
-        elevation: 0,
-        title: const Text(
-          '設定',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-        ),
-      ),
+      appBar: adaptiveAppBar(title: l.settingsTitle),
       body: ListView(
         children: [
           // ─── 一般 ───────────────────────────────────────────────
-          _SectionHeader('一般'),
+          _SectionHeader(l.settingsSectionGeneral),
           _SettingsCard(
             children: [
               SwitchListTile.adaptive(
                 value: _notificationsEnabled,
                 onChanged: _toggleNotifications,
-                title: const Text('通知'),
+                title: Text(l.settingsNotifications),
                 activeTrackColor: Colors.blue,
               ),
               const Divider(height: 1, indent: 16),
               ListTile(
-                title: const Text('言語'),
+                title: Text(l.settingsLanguage),
                 trailing: Text(
-                  'システム設定に従う',
+                  l.settingsLanguageValue,
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
                 ),
               ),
@@ -108,53 +98,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
 
           // ─── Premium ─────────────────────────────────────────────
-          _SectionHeader('Premium'),
+          _SectionHeader(l.settingsSectionPremium),
           _SettingsCard(
             children: [
               ListTile(
-                title: const Text('Premiumにアップグレード'),
+                title: Text(l.settingsPremiumUpgrade),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap: _showComingSoonDialog,
+                onTap: () => _showComingSoonDialog(context),
               ),
               const Divider(height: 1, indent: 16),
               ListTile(
                 leading: const Icon(Icons.lock_outline, color: Colors.grey),
                 title: Text(
-                  'カスタム TGL閾値',
+                  l.settingsPremiumCustomThreshold,
                   style: TextStyle(color: Colors.grey.shade400),
                 ),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap: _showComingSoonDialog,
+                onTap: () => _showComingSoonDialog(context),
               ),
             ],
           ),
 
           // ─── 情報 ────────────────────────────────────────────────
-          _SectionHeader('情報'),
+          _SectionHeader(l.settingsSectionInfo),
           _SettingsCard(
             children: [
-              const ListTile(
-                title: Text('バージョン'),
-                trailing: Text(
+              ListTile(
+                title: Text(l.settingsVersion),
+                trailing: const Text(
                   '1.1.0',
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
               ),
               const Divider(height: 1, indent: 16),
               ListTile(
-                title: const Text('プライバシーポリシー'),
+                title: Text(l.settingsPrivacyPolicy),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                 onTap: () => _launchUrl(_privacyUrl),
               ),
               const Divider(height: 1, indent: 16),
               ListTile(
-                title: const Text('利用規約'),
+                title: Text(l.settingsTermsOfService),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                 onTap: () => _launchUrl(_termsUrl),
               ),
               const Divider(height: 1, indent: 16),
               ListTile(
-                title: const Text('サポート・お問い合わせ'),
+                title: Text(l.settingsSupport),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                 onTap: () => _launchUrl(_supportUrl),
               ),

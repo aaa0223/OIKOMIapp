@@ -2,27 +2,49 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import '../models/task.dart';
 import '../models/tgl_state.dart';
+import 'l10n_helper.dart';
 
 class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
 
   // iOS上限64件のうち本アプリが使う最大件数
   static const int _maxNotifications = 60;
+  static const String _channelId = 'oikomi_notifications';
 
   static Future<void> init() async {
+    final l = deviceL10n();
     const darwinSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-    const initSettings = InitializationSettings(iOS: darwinSettings);
+    final androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    final initSettings = InitializationSettings(
+      iOS: darwinSettings,
+      android: androidSettings,
+    );
     await _plugin.initialize(initSettings);
+
+    // Android 通知チャネルを作成
+    final androidPlugin = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.createNotificationChannel(
+      AndroidNotificationChannel(
+        _channelId,
+        l.notifChannelName,
+        importance: Importance.high,
+      ),
+    );
   }
 
   static Future<void> requestPermission() async {
     final ios = _plugin.resolvePlatformSpecificImplementation<
         IOSFlutterLocalNotificationsPlugin>();
     await ios?.requestPermissions(alert: true, badge: true, sound: true);
+
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    await android?.requestNotificationsPermission();
   }
 
   static Future<void> scheduleNotificationsForTask(Task task) async {
@@ -89,15 +111,23 @@ class NotificationService {
     required TGLState state,
     required DateTime triggerTime,
   }) async {
+    final l = deviceL10n();
+    final message = _notificationMessage(l, state);
     await _plugin.zonedSchedule(
       id,
       task.title,
-      _notificationMessage(state),
+      message,
       tz.TZDateTime.from(triggerTime, tz.local),
-      const NotificationDetails(
-        iOS: DarwinNotificationDetails(
+      NotificationDetails(
+        iOS: const DarwinNotificationDetails(
           presentAlert: true,
           presentSound: true,
+        ),
+        android: AndroidNotificationDetails(
+          _channelId,
+          l.notifChannelName,
+          importance: Importance.high,
+          priority: Priority.high,
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -106,12 +136,12 @@ class NotificationService {
     );
   }
 
-  static String _notificationMessage(TGLState state) {
+  static String _notificationMessage(dynamic l, TGLState state) {
     switch (state) {
-      case TGLState.someday:  return '未来の自分が泣いてる';
-      case TGLState.reality:  return 'そろそろ現実を見ようか';
-      case TGLState.noEscape: return '逃げ場なくなりました';
-      case TGLState.war:      return '戦争です。以上。';
+      case TGLState.someday:  return l.notifSomeday;
+      case TGLState.reality:  return l.notifReality;
+      case TGLState.noEscape: return l.notifNoEscape;
+      case TGLState.war:      return l.notifWar;
       default:                return '';
     }
   }
