@@ -8,6 +8,12 @@
 -keep class io.flutter.** { *; }
 -keep class io.flutter.plugins.** { *; }
 
+# Gson - TypeTokenがジェネリック型情報をリフレクションで取得するため必須
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.google.gson.** { *; }
+-keep class * extends com.google.gson.reflect.TypeToken { *; }
+
 # Flutter deferred components (このアプリでは未使用だが Flutter 埋め込みが参照するため警告を抑制)
 -dontwarn com.google.android.play.core.splitcompat.SplitCompatApplication
 -dontwarn com.google.android.play.core.splitinstall.SplitInstallException
