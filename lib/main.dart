@@ -17,8 +17,12 @@ Future<void> main() async {
   final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
   runApp(TGLApp(showOnboarding: !onboardingCompleted));
-  await NotificationService.requestPermission();
-  await _onAppLaunch();
+
+  // Navigator ツリーが確立してから通知処理を実行する
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await NotificationService.requestPermission();
+    await _onAppLaunch();
+  });
 }
 
 Future<void> _onAppLaunch() async {
