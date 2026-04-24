@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
@@ -58,23 +61,58 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   Future<void> _pickDeadline() async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _deadline,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
-    );
-    if (date == null || !mounted) return;
+    if (Platform.isIOS) {
+      DateTime selected = _deadline;
+      await showCupertinoModalPopup<void>(
+        context: context,
+        builder: (context) => Container(
+          height: 320,
+          color: CupertinoColors.systemBackground.resolveFrom(context),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CupertinoButton(
+                    child: const Text('完了'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.dateAndTime,
+                  initialDateTime: _deadline,
+                  minimumDate: DateTime.now(),
+                  maximumDate: DateTime.now().add(const Duration(days: 365 * 5)),
+                  use24hFormat: true,
+                  onDateTimeChanged: (dt) => selected = dt,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (mounted) setState(() => _deadline = selected);
+    } else {
+      final date = await showDatePicker(
+        context: context,
+        initialDate: _deadline,
+        firstDate: DateTime.now(),
+        lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+      );
+      if (date == null || !mounted) return;
 
-    final time = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(_deadline),
-    );
-    if (time == null || !mounted) return;
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_deadline),
+      );
+      if (time == null || !mounted) return;
 
-    setState(() {
-      _deadline = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    });
+      setState(() {
+        _deadline = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      });
+    }
   }
 
   Future<void> _submit() async {
@@ -97,10 +135,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       ..isCompleted = widget.task?.isCompleted ?? false
       ..createdAt = widget.task?.createdAt ?? DateTime.now();
 
-    await DatabaseService.saveTask(task);
-    await NotificationService.scheduleNotificationsForTask(task);
-
-    if (mounted) Navigator.pop(context);
+    try {
+      await DatabaseService.saveTask(task);
+      await NotificationService.scheduleNotificationsForTask(task);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存に失敗しました: $e')),
+        );
+      }
+    }
   }
 
   @override
