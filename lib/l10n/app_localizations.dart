@@ -290,6 +290,12 @@ abstract class AppLocalizations {
   /// **'WAR'**
   String get tglStateWar;
 
+  /// No description provided for @tglStateOverdue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overdue'**
+  String get tglStateOverdue;
+
   /// No description provided for @notifSomeday.
   ///
   /// In en, this message translates to:
@@ -313,6 +319,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'It\'s war. That is all.'**
   String get notifWar;
+
+  /// No description provided for @notifHopeless.
+  ///
+  /// In en, this message translates to:
+  /// **'Already hopeless. Good luck.'**
+  String get notifHopeless;
 
   /// No description provided for @notifChannelName.
   ///
@@ -541,6 +553,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Premium features will be added in a future update.'**
   String get settingsPremiumComingSoonBody;
+
+  /// No description provided for @taskDetailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Task Detail'**
+  String get taskDetailTitle;
+
+  /// No description provided for @deleteButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteButton;
+
+  /// No description provided for @completeButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get completeButton;
+
+  /// No description provided for @undoButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undoButton;
+
+  /// No description provided for @taskDeletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Task deleted'**
+  String get taskDeletedMessage;
+
+  /// No description provided for @taskCompletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as complete'**
+  String get taskCompletedMessage;
 
   /// No description provided for @avoidance1.
   ///

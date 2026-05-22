@@ -3,6 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../models/task.dart';
 import '../models/tgl_state.dart';
 import 'l10n_helper.dart';
+import 'tgl_calculator.dart';
 
 class NotificationService {
   static final _plugin = FlutterLocalNotificationsPlugin();
@@ -54,6 +55,19 @@ class NotificationService {
     int remaining = _maxNotifications - pending.length;
     if (remaining <= 0) return;
 
+    // hopeless 通知: T > D（必要時間が残り時間を超える）
+    final D = task.deadline.difference(DateTime.now()).inMinutes / 60.0;
+    if (D > 0 && task.requiredHours > D && remaining > 0) {
+      await _scheduleNotification(
+        id: _notificationId(task.id, 4),
+        task: task,
+        state: TGLState.war,
+        triggerTime: DateTime.now().add(const Duration(seconds: 2)),
+        isHopeless: true,
+      );
+      remaining--;
+    }
+
     final transitions = [
       TGLState.someday,
       TGLState.reality,
@@ -77,31 +91,51 @@ class NotificationService {
   }
 
   static Future<void> cancelNotificationsForTask(String taskId) async {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
       await _plugin.cancel(_notificationId(taskId, i));
     }
   }
 
   static DateTime? _calculateTransitionTime(Task task, TGLState state) {
     final threshold = _thresholdFor(state);
+    if (threshold == null) return null;
+
     final T = task.requiredHours;
     final M = task.avoidance.toDouble();
+    final now = DateTime.now();
+    final deadlineHours = task.deadline.difference(now).inMinutes / 60.0;
+    if (deadlineHours <= 0) return null;
 
-    final requiredSlack = (T * M) / threshold;
-    final requiredD = T + requiredSlack;
+    double tglAtD(double D) {
+      final slack = softplus(D - T, kSmoothness) + epsilon;
+      return (T * M) / slack;
+    }
 
-    return task.deadline.subtract(
-      Duration(milliseconds: (requiredD * 3600 * 1000).toInt()),
-    );
+    // TGL が threshold 未満なら既に遷移済みか範囲外
+    if (tglAtD(deadlineHours) >= threshold) return null;
+    if (tglAtD(0) < threshold) return null;
+
+    double lo = 0.0, hi = deadlineHours;
+    for (int i = 0; i < 40; i++) {
+      final mid = (lo + hi) / 2;
+      if (tglAtD(mid) >= threshold) {
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+
+    final hoursFromNow = (lo + hi) / 2;
+    return now.add(Duration(milliseconds: (hoursFromNow * 3600 * 1000).toInt()));
   }
 
-  static double _thresholdFor(TGLState state) {
+  static double? _thresholdFor(TGLState state) {
     switch (state) {
       case TGLState.someday:  return TGLThresholds.peaceful;
       case TGLState.reality:  return TGLThresholds.someday;
       case TGLState.noEscape: return TGLThresholds.reality;
       case TGLState.war:      return TGLThresholds.noEscape;
-      default:                return double.infinity;
+      default:                return null;
     }
   }
 
@@ -110,9 +144,10 @@ class NotificationService {
     required Task task,
     required TGLState state,
     required DateTime triggerTime,
+    bool isHopeless = false,
   }) async {
     final l = deviceL10n();
-    final message = _notificationMessage(l, state);
+    final message = _notificationMessage(l, state, isHopeless: isHopeless);
     await _plugin.zonedSchedule(
       id,
       task.title,
@@ -136,7 +171,8 @@ class NotificationService {
     );
   }
 
-  static String _notificationMessage(dynamic l, TGLState state) {
+  static String _notificationMessage(dynamic l, TGLState state, {bool isHopeless = false}) {
+    if (isHopeless) return l.notifHopeless;
     switch (state) {
       case TGLState.someday:  return l.notifSomeday;
       case TGLState.reality:  return l.notifReality;

@@ -23,6 +23,7 @@ Future<void> main() async {
 }
 
 Future<void> _onAppLaunch() async {
+  await DatabaseService.purgeStaleDeleted();
   final tasks = await DatabaseService.getAllIncompleteTasks();
   for (final task in tasks) {
     await NotificationService.scheduleNotificationsForTask(task);

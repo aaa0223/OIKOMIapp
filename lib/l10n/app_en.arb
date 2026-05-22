@@ -38,11 +38,13 @@
   "tglStateReality": "Getting Real",
   "tglStateNoEscape": "No Way Out",
   "tglStateWar": "WAR",
+  "tglStateOverdue": "Overdue",
 
   "notifSomeday": "Future you is crying right now",
   "notifReality": "Time to face reality",
   "notifNoEscape": "There's no escape now",
   "notifWar": "It's war. That is all.",
+  "notifHopeless": "Already hopeless. Good luck.",
   "notifChannelName": "Task Notifications",
 
   "onboardingSkip": "Skip",
@@ -101,6 +103,13 @@
   "settingsPremiumCustomThreshold": "Custom TGL Thresholds",
   "settingsPremiumComingSoonTitle": "Coming Soon",
   "settingsPremiumComingSoonBody": "Premium features will be added in a future update.",
+
+  "taskDetailTitle": "Task Detail",
+  "deleteButton": "Delete",
+  "completeButton": "Complete",
+  "undoButton": "Undo",
+  "taskDeletedMessage": "Task deleted",
+  "taskCompletedMessage": "Marked as complete",
 
   "avoidance1": "No problem",
   "avoidance2": "Pretty easy",

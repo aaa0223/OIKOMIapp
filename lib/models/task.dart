@@ -28,4 +28,6 @@ class Task {
   late int avoidance;
   late bool isCompleted;
   late DateTime createdAt;
+  DateTime? deletedAt;
+  DateTime? completedAt;
 }

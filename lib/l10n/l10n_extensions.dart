@@ -12,6 +12,7 @@ extension TGLStateL10n on TGLState {
       case TGLState.reality:  return l.tglStateReality;
       case TGLState.noEscape: return l.tglStateNoEscape;
       case TGLState.war:      return l.tglStateWar;
+      case TGLState.overdue:  return l.tglStateOverdue;
     }
   }
 }

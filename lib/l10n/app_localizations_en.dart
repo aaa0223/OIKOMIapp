@@ -105,6 +105,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tglStateWar => 'WAR';
 
   @override
+  String get tglStateOverdue => 'Overdue';
+
+  @override
   String get notifSomeday => 'Future you is crying right now';
 
   @override
@@ -115,6 +118,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifWar => 'It\'s war. That is all.';
+
+  @override
+  String get notifHopeless => 'Already hopeless. Good luck.';
 
   @override
   String get notifChannelName => 'Task Notifications';
@@ -239,6 +245,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsPremiumComingSoonBody =>
       'Premium features will be added in a future update.';
+
+  @override
+  String get taskDetailTitle => 'Task Detail';
+
+  @override
+  String get deleteButton => 'Delete';
+
+  @override
+  String get completeButton => 'Complete';
+
+  @override
+  String get undoButton => 'Undo';
+
+  @override
+  String get taskDeletedMessage => 'Task deleted';
+
+  @override
+  String get taskCompletedMessage => 'Marked as complete';
 
   @override
   String get avoidance1 => 'No problem';

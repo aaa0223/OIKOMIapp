@@ -105,6 +105,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tglStateWar => '戦争';
 
   @override
+  String get tglStateOverdue => '期限超過';
+
+  @override
   String get notifSomeday => '未来の自分が泣いてる';
 
   @override
@@ -115,6 +118,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notifWar => '戦争です。以上。';
+
+  @override
+  String get notifHopeless => 'すでに詰んでます。ご武運を。';
 
   @override
   String get notifChannelName => 'タスク通知';
@@ -237,6 +243,24 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsPremiumComingSoonBody => 'Premium機能は今後のアップデートで追加予定です。';
+
+  @override
+  String get taskDetailTitle => '課題詳細';
+
+  @override
+  String get deleteButton => '削除';
+
+  @override
+  String get completeButton => '完了にする';
+
+  @override
+  String get undoButton => '元に戻す';
+
+  @override
+  String get taskDeletedMessage => '課題を削除しました';
+
+  @override
+  String get taskCompletedMessage => '完了にしました';
 
   @override
   String get avoidance1 => '全然ない';

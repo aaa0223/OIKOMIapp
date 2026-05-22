@@ -38,11 +38,13 @@
   "tglStateReality": "そろそろ現実",
   "tglStateNoEscape": "逃げ場なし",
   "tglStateWar": "戦争",
+  "tglStateOverdue": "期限超過",
 
   "notifSomeday": "未来の自分が泣いてる",
   "notifReality": "そろそろ現実を見ようか",
   "notifNoEscape": "逃げ場なくなりました",
   "notifWar": "戦争です。以上。",
+  "notifHopeless": "すでに詰んでます。ご武運を。",
   "notifChannelName": "タスク通知",
 
   "onboardingSkip": "スキップ",
@@ -101,6 +103,13 @@
   "settingsPremiumCustomThreshold": "カスタム TGL閾値",
   "settingsPremiumComingSoonTitle": "近日公開",
   "settingsPremiumComingSoonBody": "Premium機能は今後のアップデートで追加予定です。",
+
+  "taskDetailTitle": "課題詳細",
+  "deleteButton": "削除",
+  "completeButton": "完了にする",
+  "undoButton": "元に戻す",
+  "taskDeletedMessage": "課題を削除しました",
+  "taskCompletedMessage": "完了にしました",
 
   "avoidance1": "全然ない",
   "avoidance2": "まだ余裕",
